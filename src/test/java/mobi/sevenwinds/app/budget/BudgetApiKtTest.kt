@@ -33,9 +33,9 @@ class BudgetApiKtTest : ServerTest() {
             .toResponse<BudgetYearStatsResponse>().let { response ->
                 println("${response.total} / ${response.items} / ${response.totalByType}")
 
-                Assert.assertEquals(5, response.total)
-                Assert.assertEquals(3, response.items.size)
-                Assert.assertEquals(105, response.totalByType[BudgetType.Приход.name])
+                Assert.assertEquals(5, response.total) // Приход = 5
+                Assert.assertEquals(3, response.items.size) // limit = 3
+                Assert.assertEquals(55, response.totalByType[BudgetType.Приход.name]) // 5 + 20 + 30 = 55
             }
     }
 
@@ -47,7 +47,14 @@ class BudgetApiKtTest : ServerTest() {
         addRecord(BudgetRecord(2020, 1, 30, BudgetType.Приход))
         addRecord(BudgetRecord(2020, 5, 400, BudgetType.Приход))
 
-        // expected sort order - month ascending, amount descending
+        // ожидаемый порядок сортировки - по возрастанию месяца, по убыванию суммы
+        val expectedSorted = listOf(
+            BudgetRecord(2020,1,30, BudgetType.Приход),
+            BudgetRecord(2020,1 ,5, BudgetType.Приход),
+            BudgetRecord(2020,5,400, BudgetType.Приход),
+            BudgetRecord(2020, 5,100, BudgetType.Приход),
+            BudgetRecord(2020, 5, 50, BudgetType.Приход)
+        );
 
         RestAssured.given()
             .get("/budget/year/2020/stats?limit=100&offset=0")
